@@ -1,23 +1,7 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-
-type Post = {
-  id: number;
-  title: string;
-  body: string;
-  userId: number;
-};
+import usePosts from "../hooks/usePosts";
 
 function PostList() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    axios
-      .get<Post[]>("https://jsonplaceholder.typicode.com/posts")
-      .then((res) => setPosts(res.data))
-      .catch((err) => setError(err.message));
-  }, []);
+  const { posts, error } = usePosts();
 
   if (error) return <p className="text-danger">{error}</p>;
   return (
