@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 export type Todo = {
   id: number;
@@ -9,17 +9,15 @@ export type Todo = {
 };
 
 function useTodos() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
+  const fetchTodos = () =>
     axios
       .get<Todo[]>("https://jsonplaceholder.typicode.com/todos")
-      .then((res) => setTodos(res.data))
-      .catch((err) => setError(err.message));
-  }, []);
+      .then((res) => res.data);
 
-  return { todos, error };
+  return useQuery<Todo[], Error>({
+    queryKey: ["todos"],
+    queryFn: fetchTodos,
+  });
 }
 
 export default useTodos;
