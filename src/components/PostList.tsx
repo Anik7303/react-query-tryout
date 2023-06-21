@@ -3,13 +3,21 @@ import usePosts from "../hooks/usePosts";
 import Spinner from "./Spinner";
 
 function PostList() {
-  const [userId, setUserId] = useState<number | undefined>();
-  const { data: posts, error, isLoading } = usePosts(userId);
+  const pageSize = 5;
+  const [page, setPage] = useState<number>(1);
+  const [userId, setUserId] = useState<number | undefined>(undefined);
+  const { data, error, isLoading } = usePosts({ page, pageSize, userId });
 
-  const handleChange: ChangeEventHandler<HTMLSelectElement> = (event) => {
+  const changePageNumber = (operation: "increment" | "decrement") => {
+    if (operation === "increment") setPage((state) => state + 1);
+    else setPage((state) => (state > 1 ? state - 1 : 1));
+  };
+
+  const handleUserIdChange: ChangeEventHandler<HTMLSelectElement> = (event) => {
     const { value } = event.target;
-    if (value) setUserId(parseInt(event.target.value));
+    if (value) setUserId(parseInt(value));
     else setUserId(undefined);
+    setPage(1);
   };
 
   if (error) return <p className="text-danger">{error.message}</p>;
@@ -19,7 +27,7 @@ function PostList() {
       <select
         className="form-select mb-3"
         value={userId}
-        onChange={handleChange}
+        onChange={handleUserIdChange}
       >
         <option value="">All users</option>
         <option value="1">User 1</option>
@@ -30,7 +38,7 @@ function PostList() {
         {isLoading ? (
           <Spinner />
         ) : (
-          posts?.map((post) => (
+          data?.map((post) => (
             <li key={post.id} className="list-group-item">
               <h5 className="mb-2">{post.title}</h5>
               <p>{post.body}</p>
@@ -38,6 +46,22 @@ function PostList() {
           ))
         )}
       </ul>
+      <div className="d-flex justify-content-center align-items-center my-3">
+        <button
+          className="btn btn-primary me-2"
+          disabled={page <= 1}
+          onClick={() => changePageNumber("decrement")}
+        >
+          Previous
+        </button>
+        <button
+          className="btn btn-primary"
+          onClick={() => changePageNumber("increment")}
+          disabled={userId === undefined ? page >= 10 : page >= 2}
+        >
+          Next
+        </button>
+      </div>
     </section>
   );
 }
