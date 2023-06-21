@@ -17,6 +17,7 @@ function usePosts() {
   return useQuery<Post[], Error>({
     queryKey: ["posts"],
     queryFn: fetchPosts,
+    staleTime: 60_000, // 1 min = 1 * 60 * 1000 ms = 60_000 ms
   });
 }
 

@@ -17,6 +17,7 @@ function useTodos() {
   return useQuery<Todo[], Error>({
     queryKey: ["todos"],
     queryFn: fetchTodos,
+    staleTime: 10_000, // 10s = 10 * 1000 ms = 10_000 ms
   });
 }
 
