@@ -1,3 +1,4 @@
+import PostList from "./components/PostList";
 import TodoList from "./components/TodoList";
 
 function App() {
@@ -5,6 +6,7 @@ function App() {
     <div className="container">
       <h1>Tryout: React Query</h1>
       <TodoList />
+      <PostList />
     </div>
   );
 }
