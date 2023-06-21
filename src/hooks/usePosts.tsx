@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 type Post = {
   id: number;
@@ -9,17 +9,15 @@ type Post = {
 };
 
 function usePosts() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
+  const fetchPosts = () =>
     axios
       .get<Post[]>("https://jsonplaceholder.typicode.com/posts")
-      .then((res) => setPosts(res.data))
-      .catch((err) => setError(err.message));
-  }, []);
+      .then((res) => res.data);
 
-  return { posts, error };
+  return useQuery<Post[], Error>({
+    queryKey: ["posts"],
+    queryFn: fetchPosts,
+  });
 }
 
 export default usePosts;
