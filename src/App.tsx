@@ -1,7 +1,7 @@
 function App() {
   return (
-    <div>
-      <h1>React App</h1>
+    <div className="container">
+      <h1>Tryout: React Query</h1>
     </div>
   );
 }
