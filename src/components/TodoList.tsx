@@ -1,30 +1,14 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-
-type Todo = {
-  id: number;
-  title: string;
-  userId: number;
-  completed: boolean;
-};
+import useTodos from "../hooks/useTodos";
 
 function TodoList() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [error, setError] = useState("");
+  const { data, error } = useTodos();
 
-  useEffect(() => {
-    axios
-      .get<Todo[]>("https://jsonplaceholder.typicode.com/todos")
-      .then((res) => setTodos(res.data))
-      .catch((err) => setError(err.message));
-  }, []);
-
-  if (error) return <p className="text-danger">{error}</p>;
+  if (error) return <p className="text-danger">{error.message}</p>;
   return (
     <section className="my-3">
       <h3>Todos</h3>
       <ul className="list-group my-3">
-        {todos.map((todo) => (
+        {data?.map((todo) => (
           <li
             className={`list-group-item ${todo.completed ? "disabled" : ""}`}
             key={todo.id}
