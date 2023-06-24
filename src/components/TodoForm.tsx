@@ -2,21 +2,39 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FormEventHandler, useRef } from "react";
 import todoService, { Todo } from "../services/todo-service";
 
+type AddTodoContext = {
+  previousTodos: Todo[];
+};
+
 function TodoForm() {
   const ref = useRef<HTMLInputElement>(null);
+
   const queryClient = useQueryClient();
-  const addTodo = useMutation<Todo, Error, Todo>({
+  const addTodo = useMutation<Todo, Error, Todo, AddTodoContext>({
     mutationFn: todoService.post,
 
-    onSuccess: (data, _variables) => {
-      // Approach 1: invalidate cache
-      // queryClient.invalidateQueries({ queryKey: ["todos"] }); // This doesn't work with jsonplaceholder api
+    onMutate: (todo) => {
+      const previousTodos = queryClient.getQueryData<Todo[]>(["todos"]) || [];
 
-      // Approach 2: manuall update cache
       queryClient.setQueryData<Todo[]>(["todos"], (todos = []) => [
-        data,
+        todo,
         ...todos,
       ]);
+
+      if (ref.current) ref.current.value = "";
+
+      return { previousTodos };
+    },
+
+    onSuccess: (data, newTodo) => {
+      queryClient.setQueryData<Todo[]>(["todos"], (todos = []) =>
+        todos.map((todo) => (todo.id === newTodo.id ? data : todo))
+      );
+    },
+
+    onError: (_error, _variables, context) => {
+      if (!context) return;
+      queryClient.setQueryData<Todo[]>(["todos"], context.previousTodos);
     },
   });
 
@@ -29,16 +47,20 @@ function TodoForm() {
         completed: false,
         userId: 1,
       });
-      ref.current.value = "";
     }
   };
 
   return (
     <>
+      {addTodo.error && (
+        <div className="alert alert-danger">{addTodo.error.message}</div>
+      )}
       <form onSubmit={handleSubmit}>
         <div className="input-group">
           <input ref={ref} type="text" className="form-control" />
-          <button className="btn btn-primary">Add</button>
+          <button className="btn btn-primary" disabled={addTodo.isLoading}>
+            Add
+          </button>
         </div>
       </form>
     </>
