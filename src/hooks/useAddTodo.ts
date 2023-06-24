@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CACHE_KEY_TODOS } from "../constants";
 import APIClient from "../services/api-client";
 import { Todo } from "./useTodos";
 
@@ -19,9 +20,10 @@ const useAddTodo = ({ onAdd }: Props) => {
     mutationFn: apiClient.post,
 
     onMutate: (newTodo) => {
-      const previousTodos = queryClient.getQueryData<Todo[]>(["todos"]) || [];
+      const previousTodos =
+        queryClient.getQueryData<Todo[]>(CACHE_KEY_TODOS) || [];
 
-      queryClient.setQueryData<Todo[]>(["todos"], (todos = []) => [
+      queryClient.setQueryData<Todo[]>(CACHE_KEY_TODOS, (todos = []) => [
         newTodo,
         ...todos,
       ]);
@@ -32,7 +34,7 @@ const useAddTodo = ({ onAdd }: Props) => {
     },
 
     onSuccess: (savedTodo, newTodo) => {
-      queryClient.setQueryData<Todo[]>(["todos"], (todos) =>
+      queryClient.setQueryData<Todo[]>(CACHE_KEY_TODOS, (todos) =>
         todos?.map((todo) => (todo.id === newTodo.id ? savedTodo : todo))
       );
     },
@@ -40,7 +42,7 @@ const useAddTodo = ({ onAdd }: Props) => {
     onError: (_error, _newTodo, context) => {
       if (!context) return;
 
-      queryClient.setQueryData<Todo[]>(["todos"], context.previousTodos);
+      queryClient.setQueryData<Todo[]>(CACHE_KEY_TODOS, context.previousTodos);
     },
   });
 };
