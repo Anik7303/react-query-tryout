@@ -1,8 +1,11 @@
+import React from "react";
 import useTodos from "../hooks/useTodos";
 import Spinner from "./Spinner";
 
 function TodoList() {
-  const { data, error, isLoading } = useTodos();
+  const pageSize = 10;
+  const { data, error, isLoading, isFetchingNextPage, fetchNextPage } =
+    useTodos({ pageSize });
 
   if (error) return <p className="text-danger">{error.message}</p>;
   return (
@@ -12,16 +15,29 @@ function TodoList() {
         {isLoading ? (
           <Spinner />
         ) : (
-          data?.map((todo) => (
-            <li
-              className={`list-group-item ${todo.completed ? "disabled" : ""}`}
-              key={todo.id}
-            >
-              {todo.title}
-            </li>
+          data.pages.map((page, index) => (
+            <React.Fragment key={`todo-page-#${index}`}>
+              {page.map((todo) => (
+                <li
+                  className={`list-group-item ${
+                    todo.completed ? "disabled" : ""
+                  }`}
+                  key={todo.id}
+                >
+                  {todo.title}
+                </li>
+              ))}
+            </React.Fragment>
           ))
         )}
       </ul>
+      <button
+        className="btn btn-primary"
+        disabled={isFetchingNextPage}
+        onClick={() => fetchNextPage()}
+      >
+        More
+      </button>
     </section>
   );
 }
