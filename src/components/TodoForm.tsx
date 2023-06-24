@@ -30,9 +30,7 @@ function TodoForm() {
       <form onSubmit={handleSubmit}>
         <div className="input-group">
           <input ref={ref} type="text" className="form-control" />
-          <button className="btn btn-primary" disabled={addTodo.isLoading}>
-            Add Todo
-          </button>
+          <button className="btn btn-primary">Add Todo</button>
         </div>
       </form>
     </>

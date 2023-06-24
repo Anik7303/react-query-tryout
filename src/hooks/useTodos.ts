@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import APIClient from "../services/api-client";
+
+const apiClient = new APIClient<Todo>("/todos");
 
 export type Todo = {
   id: number;
@@ -11,10 +13,7 @@ export type Todo = {
 const useTodos = () =>
   useQuery<Todo[], Error>({
     queryKey: ["todos"],
-    queryFn: () =>
-      axios
-        .get<Todo[]>("https://jsonplaceholder.typicode.com/todos")
-        .then((res) => res.data),
+    queryFn: apiClient.getAll,
     staleTime: 10_000, // 10s = 10 * 1000 ms
   });
 
