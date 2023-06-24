@@ -3,23 +3,40 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { Todo } from "../hooks/useTodos";
 
+type AddTodoContext = {
+  previousTodos: Todo[];
+};
+
 function TodoForm() {
   const queryClient = useQueryClient();
-  const addTodo = useMutation<Todo, Error, Todo>({
+  const addTodo = useMutation<Todo, Error, Todo, AddTodoContext>({
     mutationFn: (todo) =>
       axios
         .post<Todo>("https://jsonplaceholder.typicode.com/todos", todo)
         .then((res) => res.data),
 
-    onSuccess: (savedTodo, _newTodo) => {
-      // Approach 1: invalidate cache
-      // queryClient.invalidateQueries({queryKey: ['todos']}); // This doesn't work with jsonplaceholder api
+    onMutate: (newTodo) => {
+      const previousTodos = queryClient.getQueryData<Todo[]>(["todos"]) || [];
 
-      // Approach 2: manually update cache
       queryClient.setQueryData<Todo[]>(["todos"], (todos = []) => [
-        savedTodo,
+        newTodo,
         ...todos,
       ]);
+
+      if (ref.current) ref.current.value = "";
+      return { previousTodos };
+    },
+
+    onSuccess: (savedTodo, newTodo) => {
+      queryClient.setQueryData<Todo[]>(["todos"], (todos) =>
+        todos?.map((todo) => (todo.id === newTodo.id ? savedTodo : todo))
+      );
+    },
+
+    onError: (_error, _newTodo, context) => {
+      if (!context) return;
+
+      queryClient.setQueryData<Todo[]>(["todos"], context.previousTodos);
     },
   });
 
@@ -34,17 +51,23 @@ function TodoForm() {
         completed: false,
         userId: 1,
       });
-      ref.current.value = "";
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="input-group">
-        <input ref={ref} type="text" className="form-control" />
-        <button className="btn btn-primary">Add Todo</button>
-      </div>
-    </form>
+    <>
+      {addTodo.error && (
+        <div className="alert alert-danger my-3">{addTodo.error.message}</div>
+      )}
+      <form onSubmit={handleSubmit}>
+        <div className="input-group">
+          <input ref={ref} type="text" className="form-control" />
+          <button className="btn btn-primary" disabled={addTodo.isLoading}>
+            Add Todo
+          </button>
+        </div>
+      </form>
+    </>
   );
 }
 
