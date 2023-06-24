@@ -1,6 +1,7 @@
 import React from "react";
 import useTodos from "../hooks/useTodos";
 import Spinner from "./Spinner";
+import TodoForm from "./TodoForm";
 
 function TodoList() {
   const pageSize = 10;
@@ -11,6 +12,11 @@ function TodoList() {
   return (
     <section className="my-3">
       <h3>Todos</h3>
+      <TodoForm
+        onAdd={(text) => {
+          console.log(text);
+        }}
+      />
       <ul className="list-group my-3">
         {isLoading ? (
           <Spinner />
