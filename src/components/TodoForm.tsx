@@ -1,40 +1,11 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FormEventHandler, useRef } from "react";
-import todoService, { Todo } from "../services/todo-service";
-
-type AddTodoContext = {
-  previousTodos: Todo[];
-};
+import useAddTodo from "../hooks/useAddTodo";
 
 function TodoForm() {
   const ref = useRef<HTMLInputElement>(null);
-
-  const queryClient = useQueryClient();
-  const addTodo = useMutation<Todo, Error, Todo, AddTodoContext>({
-    mutationFn: todoService.post,
-
-    onMutate: (todo) => {
-      const previousTodos = queryClient.getQueryData<Todo[]>(["todos"]) || [];
-
-      queryClient.setQueryData<Todo[]>(["todos"], (todos = []) => [
-        todo,
-        ...todos,
-      ]);
-
+  const addTodo = useAddTodo({
+    onAdd: () => {
       if (ref.current) ref.current.value = "";
-
-      return { previousTodos };
-    },
-
-    onSuccess: (data, newTodo) => {
-      queryClient.setQueryData<Todo[]>(["todos"], (todos = []) =>
-        todos.map((todo) => (todo.id === newTodo.id ? data : todo))
-      );
-    },
-
-    onError: (_error, _variables, context) => {
-      if (!context) return;
-      queryClient.setQueryData<Todo[]>(["todos"], context.previousTodos);
     },
   });
 
